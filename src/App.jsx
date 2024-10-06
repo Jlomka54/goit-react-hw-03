@@ -1,53 +1,74 @@
 import { useEffect, useState } from "react";
-import Options from "./components/Options/Options";
-import FeedBack from "./components/FeedBack/FeedBack";
-import Description from "./components/Description/Description";
-import Notification from "./components/Notification/Notification";
+import ContactForm from "./components/ContactForm/ContactForm";
+import ContactList from "./components/ContactList/ContactList";
+import SearchBox from "./components/SearchBox/SearchBox";
+import { nanoid } from "nanoid/non-secure";
 
 const App = () => {
-  const [response, setResponse] = useState(() => {
-    const valFeedBack = localStorage.getItem("feedBack");
-    const parsedValFeedBack = JSON.parse(valFeedBack) ?? {
-      good: 0,
-      neutral: 0,
-      bad: 0,
-    };
-    return parsedValFeedBack;
+  const BasecalContact = [
+    { id: "id-1", name: "Rosie Simpson", number: "459-12-56" },
+    { id: "id-2", name: "Hermione Kline", number: "443-89-12" },
+    { id: "id-3", name: "Eden Clements", number: "645-17-79" },
+    { id: "id-4", name: "Annie Copeland", number: "227-91-26" },
+  ];
+
+  const [filterSerchName, setFilterSearchName] = useState(BasecalContact); // Ініціалізуємо зі значенням BasecalContact
+  const [findContact, setFindContact] = useState("");
+
+  const handleChange = (evt) => {
+    const searchValue = evt.target.value;
+    setFindContact(searchValue);
+
+    if (searchValue === "") {
+      setFilterSearchName(contacts);
+      return;
+    }
+
+    const findContactByName = contacts.filter((contact) =>
+      contact.name.toLowerCase().includes(searchValue.toLowerCase())
+    );
+    setFilterSearchName(findContactByName);
+  };
+
+  const [contacts, setContact] = useState(() => {
+    const stringifiedContacts = localStorage.getItem("contactsLIst");
+    const parsedContacts = stringifiedContacts
+      ? JSON.parse(stringifiedContacts)
+      : BasecalContact;
+    return parsedContacts;
   });
 
   useEffect(() => {
-    const stringifiedFeedBack = JSON.stringify(response);
-    localStorage.setItem("feedBack", stringifiedFeedBack);
-  }, [response]);
+    localStorage.setItem("contactsLIst", JSON.stringify(contacts));
 
-  const updateFeedback = (feedbackType) => {
-    setResponse({ ...response, [feedbackType]: response[feedbackType] + 1 });
+    setFilterSearchName(contacts);
+  }, [contacts]);
+
+  const onAddContact = (value) => {
+    const finalContact = {
+      ...value,
+      id: nanoid(),
+    };
+
+    setContact([...contacts, finalContact]);
   };
 
-  const resetFeedBack = () => {
-    setResponse({ good: 0, neutral: 0, bad: 0 });
+  const onDeleteContact = (contactId) => {
+    const updateContact = contacts.filter(
+      (contact) => contact.id !== contactId
+    );
+    setContact(updateContact);
   };
-
-  const totalFeedback = response.good + response.neutral + response.bad;
-  const positiveFeedBack = Math.round((response.good / totalFeedback) * 100);
 
   return (
     <div>
-      <Description />
-      <Options
-        updateFeedback={updateFeedback}
-        totalFeedback={totalFeedback}
-        resetFeedBack={resetFeedBack}
+      <h1>Phonebook</h1>
+      <ContactForm onAddContact={onAddContact} />
+      <SearchBox findContact={findContact} handleChange={handleChange} />
+      <ContactList
+        contacts={filterSerchName}
+        onDeleteContact={onDeleteContact}
       />
-      {totalFeedback > 0 ? (
-        <FeedBack
-          totalFeedback={totalFeedback}
-          positiveFeedBack={positiveFeedBack}
-          response={response}
-        />
-      ) : (
-        <Notification />
-      )}
     </div>
   );
 };
