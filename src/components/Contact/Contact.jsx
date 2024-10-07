@@ -1,17 +1,18 @@
 import css from "./Contact.module.css";
 
-const Contact = ({ contacts, onDeleteContact }) => {
-  return contacts.map((contact) => (
-    <li className={css.contactItem} key={contact.id}>
+const Contact = (props) => {
+  const { name, number, id, onDeleteContact } = props;
+  return (
+    <li className={css.contactItem} key={id}>
       <div className={css.box}>
-        <p>{contact.name}</p>
-        <p>{contact.number}</p>
+        <p>{name}</p>
+        <p>{number}</p>
       </div>
-      <button type="button" onClick={() => onDeleteContact(contact.id)}>
+      <button type="button" onClick={() => onDeleteContact(id)}>
         Delete
       </button>
     </li>
-  ));
+  );
 };
 
 export default Contact;
